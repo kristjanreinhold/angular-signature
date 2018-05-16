@@ -14,7 +14,7 @@ angular.module('signature').directive('signaturePad', ['$interval', '$timeout', 
     return {
       restrict: 'EA',
       replace: true,
-      template: '<div class="signature" style="width: 100%; height: 100%" ng-style="{\'max-width\': width + \'px\', \'max-height\':height + \'px\'}"><canvas style="display: block; margin: 0 auto;" ng-mouseup="onMouseup()" ng-mousedown="notifyDrawing({ drawing: true })"></canvas></div>',
+      template: '<div class="signature" style="width: 100%; height: 100%" ng-style="{\'max-width\': width + \'px\', \'max-height\':height + \'px\'}"><canvas style="display: block; margin: 0 auto;" ng-mouseup="onMouseup()" ng-mouseleave="onMouseleave($event)" ng-mousedown="notifyDrawing({ drawing: true })"></canvas></div>',
       scope: {
         accept: '=?',
         clear: '=?',
@@ -37,6 +37,17 @@ angular.module('signature').directive('signaturePad', ['$interval', '$timeout', 
           };
 
           $scope.onMouseup = function () {
+            $scope.endDrawing();
+          };
+
+          $scope.onMouseleave = function (event) {
+            // left button depressed
+            if (event.buttons & 1 === 1) {
+              $scope.endDrawing();
+            }
+          };
+
+          $scope.endDrawing = function () {
             $scope.updateModel();
 
             // notify that drawing has ended
@@ -99,7 +110,7 @@ angular.module('signature').directive('signaturePad', ['$interval', '$timeout', 
         scope.$watch('disabled', function (val) {
             val ? scope.signaturePad.off() : scope.signaturePad.on();
         });
-        
+
         var calculateScale = function() {
           var scaleWidth = Math.min(parent.clientWidth / width, 1);
           var scaleHeight = Math.min(parent.clientHeight / height, 1);
